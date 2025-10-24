@@ -38,22 +38,60 @@ contexts:
     - include: double-quote
 
   global:
-       # Take care of comments just before a function definition.
-    - match: DEFINE
-      scope: constant.character.action
-      push:
-        - - match: \s*(?=\w)
-            set: reserved-keywords
-            pop: true
-          - match: ""
-            pop: true
-        - - meta_scope: support.constant
-          - match: ^\s*$
-            scope: support.constant
-            pop: true
-          - match: ^\s*(\*)(?!/)
-            captures:
-              1: support.constant
+    # Handle DEFINE statements with proper scoping
+    - match: '\b(DEFINE)\b'
+      scope: keyword.control.action
+      push: define-statement
+
+  define-statement:
+    - meta_scope: meta.define.action
+    # Match variable name after DEFINE
+    - match: '\s+([A-Za-z_][A-Za-z_0-9]*)'
+      captures:
+        1: variable.other.constant.action
+      set: define-after-name
+    # Exit if we hit end of line without finding name
+    - match: '$'
+      pop: true
+    # Include comments
+    - include: comment
+
+  define-after-name:
+    # Match the equals sign
+    - match: '='
+      scope: keyword.operator.assignment.action
+      set: define-after-equals
+    # Exit if we hit end of line
+    - match: '$'
+      pop: true
+    # Include comments
+    - include: comment
+
+  define-after-equals:
+    # Match quoted string value
+    - match: '"'
+      scope: punctuation.definition.string.begin.action
+      set:
+        - meta_scope: string.quoted.double.action
+        - match: '"'
+          scope: punctuation.definition.string.end.action
+          set: define-after-value
+        - match: '$'
+          pop: true
+    # Exit if no quote found
+    - match: '$'
+      pop: true
+    # Include comments
+    - include: comment
+
+  define-after-value:
+    # After the closing quote, allow comments
+    - include: comment
+    # Pop at end of line
+    - match: '$'
+      pop: true
+    # Consume any whitespace
+    - match: '\s+'
 
   comment:
     - match: ';'
