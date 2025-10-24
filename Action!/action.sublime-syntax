@@ -10,7 +10,7 @@ variables:
   decimal: '\b(-)?[0-9.]+\b'
   hexadecimal: '("?)\$[0-9a-fA-F]+("?)'
 
-  reserved: '(?i)\b(AND|FI|OR|UNTIL|FOR|WHILE|FUNC|PROC|XOR|IF|RETURN|INCLUDE|RSH|DEFINE|SET|DO|LSH|STEP|ELSE|MOD|THEN|ELSEIF|MODULE|TO|EXIT|OD|TYPE)\b'
+  reserved: '(?i)\b(AND|FI|OR|UNTIL|FOR|WHILE|XOR|IF|RETURN|INCLUDE|RSH|SET|DO|LSH|STEP|ELSE|MOD|THEN|ELSEIF|MODULE|TO|EXIT|OD|TYPE)\b'
 
   procedures: '(?i)\b(Print|PrintE|PrintD|PrintDE|PrintB|PrintBE|PrintBD|PrintBDE|PrintC|PrintCE|PrintCD|PrintCDE|PrintI|PrintIE|PrintID|PrintIDE|Put|PutE|PutD|PutDE|InputS|InputSD|InputMD|Open|Close|XIO|Note|Point|Graphics|SetColor|Plot|DrawTo|Fill|Position|Sound|SndRst|SCopy|SCopyS|SAssign|StrB|StrC|StrI|Break|Error|Zero|SetBlock|MoveBlock)\b'
   functions: '(?i)\b(InputB|InputC|InputI|InputBD|InpuCD|InputID|GetD|Locate|Paddle|PTrig|Stick|STrig|SCompare|ValB|ValC|ValI|Rand|Peek|PeekC|Poke|PokeC)\b'
@@ -122,20 +122,74 @@ contexts:
       scope: entity.name.function
 
   functions:
-      - match: '\b(PROC|FUNC)\b'
-        scope: storage.type.function.action
-        push:
-          - meta_scope: meta.function.action
-          - match: "(?={{identifier}})"
-            push:
-              - meta_content_scope: entity.name.function.python
-              - include: entity-name-function
-              - match: ''
-                pop: true
-      # push:
-      #   - meta_scope: meta.function.action
-      #   pop: true
-#       - include: line-continuation-or-pop
+    - match: '\b(PROC|FUNC)\b'
+      scope: storage.type.function.action
+      push: function-definition
+
+  function-definition:
+    - meta_scope: meta.function.action
+    # Match function name (must have at least one space before)
+    - match: '\s+([A-Za-z_][A-Za-z_0-9]*)'
+      captures:
+        1: entity.name.function.action
+      set: function-after-name
+    # Include comments
+    - include: comment
+    # Exit if we hit end of line or opening paren without name
+    - match: '(?=\()|$'
+      pop: true
+
+  function-after-name:
+    - meta_scope: meta.function.action
+    # Match optional address assignment (=$address)
+    - match: '='
+      scope: keyword.operator.assignment.action
+      set: function-address
+    # Match opening parenthesis (parameters start)
+    - match: '\('
+      scope: punctuation.section.parameters.begin.action
+      set: function-parameters
+    # Exit at end of line
+    - match: '$'
+      pop: true
+
+  function-address:
+    - meta_scope: meta.function.action
+    # Match hexadecimal address
+    - match: '\$[0-9a-fA-F]+'
+      scope: constant.numeric.hexadecimal.action
+      set: function-after-address
+    # Exit if no valid hex found
+    - match: '(?=\()|$'
+      pop: true
+
+  function-after-address:
+    - meta_scope: meta.function.action
+    # Match opening parenthesis after address
+    - match: '\('
+      scope: punctuation.section.parameters.begin.action
+      set: function-parameters
+    # Exit at end of line
+    - match: '$'
+      pop: true
+
+  function-parameters:
+    - meta_scope: meta.function.parameters.action
+    # Match closing parenthesis
+    - match: '\)'
+      scope: punctuation.section.parameters.end.action
+      pop: true
+    # Match parameter types
+    - match: '{{base_type}}'
+      scope: keyword.control.action
+    # Match parameter names
+    - match: '\b{{identifier}}\b'
+      scope: variable.parameter.action
+    # Match comma separator
+    - match: ','
+      scope: punctuation.separator.parameters.action
+    # Include comments
+    - include: comment
 
   function-call:
     - match: (\w+)\s*(?=\()
