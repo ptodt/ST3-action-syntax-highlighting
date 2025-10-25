@@ -140,6 +140,17 @@
             "foreground": "var(orange)"
         },
         {
+            "name": "DEFINE constant",
+            "scope": "variable.other.constant",
+            "foreground": "var(orange2)",
+            "font_style": "bold"
+        },
+        {
+            "name": "Variable/Identifier",
+            "scope": "string.other",
+            "foreground": "var(white3)"
+        },
+        {
             "name": "Language variable",
             "scope": "variable.language",
             "foreground": "var(red)",

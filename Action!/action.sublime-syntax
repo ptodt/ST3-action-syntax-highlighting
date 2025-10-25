@@ -45,27 +45,33 @@ contexts:
 
   define-statement:
     - meta_scope: meta.define.action
-    # Match variable name after DEFINE
-    - match: '\s+([A-Za-z_][A-Za-z_0-9]*)'
-      captures:
-        1: variable.other.constant.action
-      set: define-after-name
-    # Exit if we hit end of line without finding name
-    - match: '$'
+    # Exit if we see a type keyword or reserved keyword (means DEFINE block ended)
+    - match: '(?={{base_type}}|{{reserved}})'
       pop: true
+    # Match constant name
+    - match: '([A-Za-z_][A-Za-z_0-9]*)'
+      scope: variable.other.constant.action
+      push: define-after-name
     # Include comments
     - include: comment
+    # Skip whitespace and newlines (stay in define block)
+    - match: '\s+'
+    # Exit on any non-whitespace that's not a valid identifier start
+    - match: '(?=[^\s\w;])'
+      pop: true
 
   define-after-name:
     # Match the equals sign
     - match: '='
       scope: keyword.operator.assignment.action
       set: define-after-equals
-    # Exit if we hit end of line
-    - match: '$'
-      pop: true
     # Include comments
     - include: comment
+    # Skip whitespace
+    - match: '\s+'
+    # Exit if no equals found and hit something else
+    - match: '(?=[^\s=;])'
+      pop: 2
 
   define-after-equals:
     # Match quoted string value
@@ -75,23 +81,22 @@ contexts:
         - meta_scope: string.quoted.double.action
         - match: '"'
           scope: punctuation.definition.string.end.action
-          set: define-after-value
+          set: define-after-string
         - match: '$'
-          pop: true
-    # Exit if no quote found
-    - match: '$'
-      pop: true
+          pop: 2
+
+  define-after-string:
+    # After closing quote, check for comma or end
+    - match: '\s*,'
+      scope: punctuation.separator.action
+      set: define-statement
     # Include comments
     - include: comment
-
-  define-after-value:
-    # After the closing quote, allow comments
-    - include: comment
-    # Pop at end of line
-    - match: '$'
-      pop: true
-    # Consume any whitespace
-    - match: '\s+'
+    # Match whitespace but NOT newlines
+    - match: '[ \t]+'
+    # Exit when we hit newline (end of this definition, no comma = end of DEFINE block)
+    - match: '\n|$'
+      pop: 2
 
   comment:
     - match: ';'
