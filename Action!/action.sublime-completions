@@ -87,17 +87,6 @@
             "trigger": "FI",
             "contents": "FI",
             "kind": "keyword"
-        },
-
-        {
-            "trigger": "Appendable",
-            "contents": "Appendable",
-            "kind": ["type", "i", "Interface"]
-        },
-        {
-            "trigger": "Boolean",
-            "contents": "Boolean",
-            "kind": ["type", "c", "Class"]
         }
     ]
 }

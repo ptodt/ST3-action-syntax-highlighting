@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+	<key>name</key>
+	<string>Completion: Exclude Strings</string>
+	<key>scope</key>
+	<string>string.quoted</string>
+	<key>settings</key>
+	<dict>
+		<key>cancelCompletion</key>
+		<string>.*</string>
+	</dict>
+</dict>
+</plist>
