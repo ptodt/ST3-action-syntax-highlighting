@@ -10,7 +10,8 @@ variables:
   decimal: '\b(-)?[0-9.]+\b'
   hexadecimal: '("?)\$[0-9a-fA-F]+("?)'
 
-  reserved: '(?i)\b(AND|FI|OR|UNTIL|FOR|WHILE|XOR|IF|RETURN|INCLUDE|RSH|SET|DO|LSH|STEP|ELSE|MOD|THEN|ELSEIF|MODULE|TO|EXIT|OD|TYPE)\b'
+  block_keywords: '(?i)\b(MODULE|TYPE|RETURN)\b'
+  reserved: '(?i)\b(AND|FI|OR|UNTIL|FOR|WHILE|XOR|IF|INCLUDE|RSH|SET|DO|LSH|STEP|ELSE|MOD|THEN|ELSEIF|TO|EXIT|OD)\b'
 
   procedures: '(?i)\b(Print|PrintE|PrintD|PrintDE|PrintB|PrintBE|PrintBD|PrintBDE|PrintC|PrintCE|PrintCD|PrintCDE|PrintI|PrintIE|PrintID|PrintIDE|Put|PutE|PutD|PutDE|InputS|InputSD|InputMD|Open|Close|XIO|Note|Point|Graphics|SetColor|Plot|DrawTo|Fill|Position|Sound|SndRst|SCopy|SCopyS|SAssign|StrB|StrC|StrI|Break|Error|Zero|SetBlock|MoveBlock)\b'
   functions: '(?i)\b(InputB|InputC|InputI|InputBD|InpuCD|InputID|GetD|Locate|Paddle|PTrig|Stick|STrig|SCompare|ValB|ValC|ValI|Rand|Peek|PeekC|Poke|PokeC)\b'
@@ -23,6 +24,7 @@ contexts:
     - include: comment
     - include: library-functions
     - include: library-procedures
+    - include: block-keywords
     - include: reserved-keywords
     - include: base-types
     - include: functions
@@ -128,7 +130,7 @@ contexts:
 
   functions:
     - match: '\b(PROC|FUNC)\b'
-      scope: storage.type.function.action
+      scope: keyword.control.block.action
       push: function-definition
 
   function-definition:
@@ -224,15 +226,20 @@ contexts:
     - match: '{{procedures}}'
       scope: support.function
 
+  # Block keywords (MODULE, TYPE, RETURN)
+  block-keywords:
+    - match: '{{block_keywords}}'
+      scope: keyword.control.block.action
+
   # Reserved keywords
   reserved-keywords:
     - match: '{{reserved}}'
       scope: keyword.control.action
 
-  # Reserved keywords
+  # Base types
   base-types:
     - match: '{{base_type}}'
-      scope: keyword.control.action
+      scope: storage.type.action
 
   operators-basic:
     - match: (\+|-|\*|/|%|<|>|<>|#|@)

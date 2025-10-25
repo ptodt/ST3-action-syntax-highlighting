@@ -89,6 +89,12 @@
             "foreground": "var(pink)"
         },
         {
+            "name": "Block keywords",
+            "scope": "keyword.control.block",
+            "foreground": "var(red)",
+            "font_style": "bold"
+        },
+        {
             "name": "Operators",
             "scope": "keyword.operator",
             "foreground": "var(red2)"
@@ -121,7 +127,7 @@
         {
             "name": "Storage type",
             "scope": "storage.type",
-            "foreground": "var(pink)",
+            "foreground": "var(blue)",
             "font_style": "italic"
         },
         {
